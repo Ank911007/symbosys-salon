@@ -1,0 +1,92 @@
+export const curatedSanctuaries = [
+  {
+    id: "valentino",
+    name: "Valentino X Family Salon",
+    rating: 4.9,
+    reviews: 258,
+    category: "Beauty Parlour",
+    address: "Shop no 11, Mohan Marketing Complex, Ashok Nagar",
+    features: ["On-site services"],
+    lat: 23.3441,
+    lng: 85.3096,
+    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=2000",
+    website: "https://www.instagram.com/valentinoxsalon/"
+  },
+  {
+    id: "page3",
+    name: "Page 3 Luxury Salon & Makeover Studio",
+    rating: 4.9,
+    reviews: 143,
+    category: "Beauty Parlour",
+    address: "H37, Harmu Rd, near Chetak Showroom",
+    reviewSnippet: "The salon is clean, well-maintained, and has a modern, relaxing vibe.",
+    lat: 23.3500,
+    lng: 85.3200,
+    image: "https://images.unsplash.com/photo-1540555700478-4be289fbecef?auto=format&fit=crop&q=80&w=2000",
+    website: "https://locations.page3salon.com/page-3-luxury-salon-makeover-studio-beauty-salons-harmu-housing-colony-ranchi-426102/Home?utm_source=locator&utm_medium=googleplaces"
+  },
+  {
+    id: "cheveux",
+    name: "Cheveux Vuitton | Family Salon and SPA",
+    rating: 4.8,
+    reviews: 546,
+    category: "Beauty Parlour",
+    address: "gopal Marketing complex, Argora",
+    features: ["3+ years in business"],
+    lat: 23.3600,
+    lng: 85.3300,
+    image: "https://images.unsplash.com/photo-1515377905703-c4788e51af15?auto=format&fit=crop&q=80&w=2000",
+    website: "https://cheveuxvuitton.com"
+  },
+  {
+    id: "fsalon",
+    name: "F Salon Ranchi by FTV",
+    rating: 4.9,
+    reviews: 130,
+    category: "Wellness center",
+    address: "NO.2, 2nd Floor Area in Sai Arcade, Ashok Nagar",
+    features: ["On-site services"],
+    lat: 23.3300,
+    lng: 85.3100,
+    image: "https://images.unsplash.com/photo-1616394584738-fc6e612e71b9?auto=format&fit=crop&q=80&w=2000",
+    website: "https://fsalonbyftv.in"
+  },
+  {
+    id: "naturals",
+    name: "Naturals Salon",
+    rating: 4.9,
+    reviews: 147,
+    category: "Beauty Parlour",
+    address: "Shop No 1, 1st Floor, Sunita Complex, Harmu Rd",
+    reviewSnippet: "They understood exactly what I wanted and did a wonderful job with my hair.",
+    lat: 23.3550,
+    lng: 85.3150,
+    image: "https://images.unsplash.com/photo-1522337660859-02fbefca4702?auto=format&fit=crop&q=80&w=2000",
+    website: "https://www.naturals.in"
+  },
+  {
+    id: "lotus",
+    name: "Lotus Salon Ranchi",
+    rating: 4.7,
+    reviews: 208,
+    category: "Beauty Parlour",
+    address: "Chedi complex, opp. to Bawarchi",
+    reviewSnippet: "A must visit salon.. prices are not high and the workers are nice too",
+    lat: 23.3400,
+    lng: 85.3000,
+    image: "https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80&w=2000",
+    website: "https://www.lotusunisexsalon.com"
+  },
+  {
+    id: "looks",
+    name: "Looks Salon – Best Unisex Salon in Ranchi",
+    rating: 4.8,
+    reviews: 633,
+    category: "Beauty Parlour",
+    address: "1st Floor, RSP HOUSE, Ratu Rd",
+    lat: 23.3650,
+    lng: 85.3250,
+    image: "https://images.unsplash.com/photo-1600880292203-757bb62b4baf?auto=format&fit=crop&q=80&w=2000",
+    website: "https://www.lookssalon.in"
+  }
+];

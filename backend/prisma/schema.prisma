@@ -1,0 +1,168 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  passwordHash String   @map("password_hash")
+  name         String
+  role         Role     @default(CUSTOMER)
+  phone        String?
+  createdAt    DateTime @default(now()) @map("created_at")
+  updatedAt    DateTime @updatedAt @map("updated_at")
+  salonsOwned  Salon[]  @relation("SalonOwner")
+
+  @@map("users")
+}
+
+model Customer {
+  id           String        @id @default(uuid())
+  phone        String        @unique
+  name         String?
+  email        String?
+  gender       String?
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  appointments Appointment[]
+  reviews      Review[]
+
+  @@map("customers")
+}
+
+model Salon {
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  category     String?
+  features     String[]
+  image        String?
+  website      String?
+  rating       Float         @default(0.0)
+  totalReviews Int           @default(0) @map("total_reviews")
+  isOpen       Boolean       @default(true) @map("is_open")
+  openTime     String?       @map("open_time")
+  closeTime    String?       @map("close_time")
+  closedDates  String[]      @map("closed_dates")
+  ownerId      String?       @map("owner_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  appointments Appointment[]
+  reviews      Review[]
+  salonAddress SalonAddress?
+  owner        User?         @relation("SalonOwner", fields: [ownerId], references: [id])
+  services     Service[]
+  stylists     Stylist[]
+
+  @@index([ownerId])
+  @@index([isOpen])
+  @@map("salons")
+}
+
+model SalonAddress {
+  id        String   @id @default(uuid())
+  address   String
+  lat       Float
+  lng       Float
+  salonId   String   @unique @map("salon_id")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+  salon     Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([lat, lng])
+  @@map("salon_addresses")
+}
+
+model Stylist {
+  id           String        @id @default(uuid())
+  name         String
+  bio          String?
+  salonId      String        @map("salon_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  appointments Appointment[]
+  salon        Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@map("stylists")
+}
+
+model Service {
+  id           String        @id @default(uuid())
+  name         String
+  description  String?
+  duration     Int
+  price        Decimal       @db.Decimal(10, 2)
+  isActive     Boolean       @default(true) @map("is_active")
+  salonId      String        @map("salon_id")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+  appointments Appointment[]
+  salon        Salon         @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@map("services")
+}
+
+model Review {
+  id          String   @id @default(uuid())
+  rating      Int
+  comment     String?
+  isApproved  Boolean  @default(false)
+  salonId     String   @map("salon_id")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+  customer_id String
+  customers   Customer @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  salon       Salon    @relation(fields: [salonId], references: [id], onDelete: Cascade)
+
+  @@index([salonId])
+  @@index([salonId, isApproved])
+  @@index([customer_id])
+  @@map("reviews")
+}
+
+model Appointment {
+  id            String     @id @default(uuid())
+  salonId       String     @map("salon_id")
+  serviceId     String     @map("service_id")
+  stylistId     String?    @map("stylist_id")
+  startTime     DateTime   @map("start_time")
+  endTime       DateTime   @map("end_time")
+  status        ApptStatus @default(PENDING)
+  notes         String?
+  customerName  String?    @map("customer_name")
+  customerPhone String?    @map("customer_phone")
+  customerEmail String?    @map("customer_email")
+  createdAt     DateTime   @default(now()) @map("created_at")
+  updatedAt     DateTime   @updatedAt @map("updated_at")
+  customer_id   String
+  customers     Customer   @relation(fields: [customer_id], references: [id], onDelete: Cascade)
+  salon         Salon      @relation(fields: [salonId], references: [id], onDelete: Cascade)
+  service       Service    @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  stylist       Stylist?   @relation(fields: [stylistId], references: [id])
+
+  @@index([salonId])
+  @@index([serviceId])
+  @@index([startTime, endTime])
+  @@index([customer_id])
+  @@map("appointments")
+}
+
+enum Role {
+  CUSTOMER
+  STYLIST
+  ADMIN
+  SALON_OWNER
+}
+
+enum ApptStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
