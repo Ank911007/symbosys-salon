@@ -1,36 +1,12 @@
 import { useMutation } from '@tanstack/react-query';
-
-const API_URL = import.meta.env.VITE_API_URL || '/api';
-
-/**
- * Helper for authenticated requests
- */
-const fetchWithAuth = async (endpoint, options = {}) => {
-  const token = localStorage.getItem('minta_token');
-  const headers = {
-    'Content-Type': 'application/json',
-    ...(token ? { 'Authorization': `Bearer ${token}` } : {}),
-    ...options.headers,
-  };
-
-  const response = await fetch(`${API_URL}${endpoint}`, {
-    ...options,
-    headers,
-  });
-
-  const data = await response.json();
-  if (!response.ok) {
-    throw new Error(data.message || data.error || 'Something went wrong');
-  }
-  return data;
-};
+import { apiClient, API_URL } from '../lib/apiClient';
 
 /**
  * Hook for login
  */
 export const useLogin = () => {
   return useMutation({
-    mutationFn: (credentials) => fetchWithAuth('/auth/login', {
+    mutationFn: (credentials) => apiClient('/auth/login', {
       method: 'POST',
       body: JSON.stringify(credentials),
     }),
@@ -42,7 +18,7 @@ export const useLogin = () => {
  */
 export const useRegister = () => {
   return useMutation({
-    mutationFn: (userData) => fetchWithAuth('/auth/register', {
+    mutationFn: (userData) => apiClient('/auth/register', {
       method: 'POST',
       body: JSON.stringify(userData),
     }),
@@ -54,7 +30,7 @@ export const useRegister = () => {
  */
 export const useSubmitBooking = () => {
   return useMutation({
-    mutationFn: (bookingData) => fetchWithAuth('/appointments', {
+    mutationFn: (bookingData) => apiClient('/appointments', {
       method: 'POST',
       body: JSON.stringify(bookingData),
     }),
@@ -90,7 +66,7 @@ export const useSubmitContact = () => {
  */
 export const useSubmitReview = (salonId) => {
   return useMutation({
-    mutationFn: (reviewData) => fetchWithAuth(`/salons/${salonId}/reviews`, {
+    mutationFn: (reviewData) => apiClient(`/salons/${salonId}/reviews`, {
       method: 'POST',
       body: JSON.stringify(reviewData),
     }),
@@ -108,7 +84,7 @@ export const useSubmitReview = (salonId) => {
  */
 export const useUpdateReviewApproval = () => {
   return useMutation({
-    mutationFn: ({ reviewId, isApproved }) => fetchWithAuth(`/owner/salon/reviews/${reviewId}/approval`, {
+    mutationFn: ({ reviewId, isApproved }) => apiClient(`/owner/salon/reviews/${reviewId}/approval`, {
       method: 'PATCH',
       body: JSON.stringify({ isApproved }),
     }),
@@ -122,7 +98,7 @@ export const useUpdateReviewApproval = () => {
  */
 export const useCheckPhone = () => {
   return useMutation({
-    mutationFn: (data) => fetchWithAuth('/customer/check-phone', {
+    mutationFn: (data) => apiClient('/customer/check-phone', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -134,7 +110,7 @@ export const useCheckPhone = () => {
  */
 export const useVerifyOtp = () => {
   return useMutation({
-    mutationFn: (data) => fetchWithAuth('/customer/verify-otp', {
+    mutationFn: (data) => apiClient('/customer/verify-otp', {
       method: 'POST',
       body: JSON.stringify(data),
     }),
@@ -147,12 +123,11 @@ export const useVerifyOtp = () => {
 export const useCompleteProfile = () => {
   return useMutation({
     mutationFn: ({ tempToken, ...data }) => {
-      const token = tempToken;
       return fetch(`${API_URL}/customer/complete-profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${token}`,
+          'Authorization': `Bearer ${tempToken}`,
         },
         body: JSON.stringify(data),
       }).then(async (res) => {

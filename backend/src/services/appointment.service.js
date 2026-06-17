@@ -87,7 +87,7 @@ async function getAppointments({ userId, role, page = 1, limit = 20, status }) {
     where,
     include: {
       service: { select: { name: true, duration: true, price: true } },
-      user: { select: { id: true, name: true, email: true } },
+      customers: { select: { id: true, name: true, email: true } },
     },
     orderBy: { startTime: 'desc' },
     skip,
@@ -111,7 +111,7 @@ async function getAppointmentById(appointmentId, userId, role) {
     where: { id: appointmentId },
     include: {
       service: true,
-      user: { select: { id: true, name: true, email: true, phone: true } },
+      customers: { select: { id: true, name: true, email: true, phone: true } },
     },
   });
 
@@ -166,7 +166,7 @@ async function updateAppointmentStatus(appointmentId, status, userId, role) {
     data: { status },
     include: {
       service: { select: { name: true, duration: true, price: true } },
-      user: { select: { id: true, name: true, email: true } },
+      customers: { select: { id: true, name: true, email: true } },
     },
   });
 }

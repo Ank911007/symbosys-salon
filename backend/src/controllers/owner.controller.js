@@ -1,6 +1,13 @@
 const prisma = require('../config/prisma');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
+const reviewService = require('../services/review.service');
+const {
+  updateSalonSchema,
+  createServiceSchema,
+  updateServiceSchema,
+  updateAppointmentStatusSchema,
+} = require('../validators/schemas');
 
 // ─── Helper: Resolve the owner's salon ─────────────────────────────────────
 
@@ -66,8 +73,6 @@ const getSalon = catchAsync(async (req, res) => {
 
 const updateSalon = catchAsync(async (req, res) => {
   const salon = await getOwnerSalon(req.user.id);
-
-  const { updateSalonSchema } = require('../validators/schemas');
   const validated = updateSalonSchema.parse(req.body);
 
   // Separate salonAddress data from salon data
@@ -114,8 +119,6 @@ const getServices = catchAsync(async (req, res) => {
 
 const addService = catchAsync(async (req, res) => {
   const salon = await getOwnerSalon(req.user.id);
-
-  const { createServiceSchema } = require('../validators/schemas');
   const validated = createServiceSchema.parse(req.body);
 
   const service = await prisma.service.create({
@@ -134,7 +137,6 @@ const updateService = catchAsync(async (req, res) => {
   });
   if (!existing) throw ApiError.notFound('Service not found in your salon.');
 
-  const { updateServiceSchema } = require('../validators/schemas');
   const validated = updateServiceSchema.parse(req.body);
 
   const service = await prisma.service.update({
@@ -209,24 +211,31 @@ const getAppointments = catchAsync(async (req, res) => {
   const skip = (Number(page) - 1) * Number(limit);
   const take = Number(limit);
 
-  const appointments = await prisma.appointment.findMany({
-    where,
-    select: {
-      id: true,
-      startTime: true,
-      endTime: true,
-      status: true,
-      notes: true,
-      service: { select: { name: true, duration: true, price: true } },
-      customers: { select: { name: true, email: true, phone: true } },
-      stylist: { select: { name: true } },
-    },
-    orderBy: { startTime: 'desc' },
-    skip,
-    take,
-  });
+  const [appointments, total] = await Promise.all([
+    prisma.appointment.findMany({
+      where,
+      select: {
+        id: true,
+        startTime: true,
+        endTime: true,
+        status: true,
+        notes: true,
+        service: { select: { name: true, duration: true, price: true } },
+        customers: { select: { name: true, email: true, phone: true } },
+        stylist: { select: { name: true } },
+      },
+      orderBy: { startTime: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.appointment.count({ where }),
+  ]);
 
-  res.status(200).json({ success: true, data: appointments });
+  res.status(200).json({
+    success: true,
+    data: appointments,
+    pagination: { total, page: Number(page), limit: take, totalPages: Math.ceil(total / take) },
+  });
 });
 
 const updateAppointmentStatus = catchAsync(async (req, res) => {
@@ -242,7 +251,6 @@ const updateAppointmentStatus = catchAsync(async (req, res) => {
     throw ApiError.badRequest(`Cannot update an appointment that is already ${appointment.status.toLowerCase()}.`);
   }
 
-  const { updateAppointmentStatusSchema } = require('../validators/schemas');
   const { status } = updateAppointmentStatusSchema.parse(req.body);
 
   const updated = await prisma.appointment.update({
@@ -265,23 +273,31 @@ const getReviews = catchAsync(async (req, res) => {
   const { page = 1, limit = 50 } = req.query;
   const skip = (Number(page) - 1) * Number(limit);
   const take = Number(limit);
+  const where = { salonId: salon.id };
 
-  const reviews = await prisma.review.findMany({
-    where: { salonId: salon.id },
-    select: {
-      id: true,
-      rating: true,
-      comment: true,
-      isApproved: true,
-      createdAt: true,
-      customers: { select: { name: true, email: true } }
-    },
-    orderBy: { createdAt: 'desc' },
-    skip,
-    take,
+  const [reviews, total] = await Promise.all([
+    prisma.review.findMany({
+      where,
+      select: {
+        id: true,
+        rating: true,
+        comment: true,
+        isApproved: true,
+        createdAt: true,
+        customers: { select: { name: true, email: true } }
+      },
+      orderBy: { createdAt: 'desc' },
+      skip,
+      take,
+    }),
+    prisma.review.count({ where }),
+  ]);
+
+  res.status(200).json({
+    success: true,
+    data: reviews,
+    pagination: { total, page: Number(page), limit: take, totalPages: Math.ceil(total / take) },
   });
-
-  res.status(200).json({ success: true, data: reviews });
 });
 
 const updateReviewApproval = catchAsync(async (req, res) => {
@@ -298,23 +314,11 @@ const updateReviewApproval = catchAsync(async (req, res) => {
 
   if (!review) throw ApiError.notFound('Review not found.');
 
-  const updatedReview = await prisma.review.update({
-    where: { id: req.params.id },
-    data: { isApproved },
-    include: { customers: { select: { name: true, email: true } } },
-  });
-
-  // Re-aggregate the average rating (only for APPROVED reviews)
-  const agg = await prisma.review.aggregate({
-    where: { salonId: salon.id, isApproved: true },
-    _avg: { rating: true },
-    _count: { id: true }
-  });
-
-  // Update the salon record with the new average rating
-  await prisma.salon.update({
-    where: { id: salon.id },
-    data: { rating: agg._avg.rating || 0, totalReviews: agg._count.id }
+  // Use centralized review service for atomic rating recalculation
+  const updatedReview = await reviewService.updateReviewApproval({
+    reviewId: req.params.id,
+    salonId: salon.id,
+    isApproved,
   });
 
   res.status(200).json({ success: true, data: updatedReview, message: 'Review approval status updated.' });

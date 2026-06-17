@@ -5,6 +5,7 @@ import { Link, useSearchParams } from 'react-router-dom';
 import { curatedSanctuaries } from '../data/mockData';
 import { getDistance } from '../lib/utils';
 import { fetchNearbySalons } from '../lib/api';
+import { mapSalonResponse, API_URL } from '../lib/apiClient';
 import SalonResultCard from '../components/salons/SalonResultCard';
 import { SimpleFooter } from '../components/sections/SimpleFooter';
 import { Pagination } from '../components/ui/Pagination';
@@ -350,30 +351,10 @@ export default function SearchResults() {
       () => {
         setLocationState('denied');
         // Fetch all salons from DB if geolocation is denied
-        fetch(`${import.meta.env.VITE_API_URL || '/api'}/salons`)
+        fetch(`${API_URL}/salons`)
           .then(res => res.json())
           .then(({ data }) => {
-            const formatted = data.map(salon => ({
-              id: salon.id,
-              name: salon.name,
-              category: salon.category || 'Beauty Parlour',
-              address: salon.salonAddress?.address || salon.address || 'Unknown',
-              city: salon.city || null,
-              lat: salon.salonAddress?.lat || salon.lat,
-              lng: salon.salonAddress?.lng || salon.lng,
-              distance: 0,
-              rating: salon.rating ? salon.rating.toFixed(1) : '5.0',
-              reviews: salon.totalReviews || 0,
-              image: salon.image || 'https://images.unsplash.com/photo-1560066984-138dadb4c035?auto=format&fit=crop&q=80',
-              website: salon.website || null,
-              features: salon.features || [],
-              priceLevel: '$$',
-              reviewSnippet: salon.reviews?.[0]?.comment || null,
-              description: salon.description || null,
-              services: salon.services || [],
-              stylists: salon.stylists || [],
-            }));
-            setSalons(formatted);
+            setSalons(data.map(mapSalonResponse));
           })
           .catch(err => {
             console.error('Failed fallback fetch in SearchResults:', err);

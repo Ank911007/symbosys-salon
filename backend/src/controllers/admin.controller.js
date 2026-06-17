@@ -2,7 +2,11 @@ const prisma = require('../config/prisma');
 const catchAsync = require('../utils/catchAsync');
 const ApiError = require('../utils/ApiError');
 const { hashPassword } = require('../utils/password');
-const { adminRegisterSalonSchema } = require('../validators/schemas');
+const { adminRegisterSalonSchema, adminUpdateSalonSchema } = require('../validators/schemas');
+
+// Default coordinates (Ranchi, India) for salons without geocoding
+const DEFAULT_LAT = 23.3441;
+const DEFAULT_LNG = 85.3096;
 
 /**
  * GET /api/admin/salons
@@ -73,9 +77,8 @@ const registerSalon = catchAsync(async (req, res) => {
     await tx.salonAddress.create({
       data: {
         address: data.salonAddress,
-        // Defaulting to Ranchi, India coordinates so they show up on the search map
-        lat: 23.3441,
-        lng: 85.3096,
+        lat: DEFAULT_LAT,
+        lng: DEFAULT_LNG,
         salonId: salon.id,
       },
     });
@@ -125,7 +128,6 @@ const deleteSalon = catchAsync(async (req, res) => {
  * Update salon details and owner credentials
  */
 const updateSalon = catchAsync(async (req, res) => {
-  const { adminUpdateSalonSchema } = require('../validators/schemas');
   const data = adminUpdateSalonSchema.parse(req.body);
 
   const salon = await prisma.salon.findUnique({
@@ -155,8 +157,8 @@ const updateSalon = catchAsync(async (req, res) => {
         update: { address: data.salonAddress },
         create: {
           address: data.salonAddress,
-          lat: 23.3441,
-          lng: 85.3096,
+          lat: DEFAULT_LAT,
+          lng: DEFAULT_LNG,
           salonId: req.params.id,
         },
       });

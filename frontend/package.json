@@ -16,7 +16,6 @@
   },
   "dependencies": {
     "@capacitor/android": "^8.4.0",
-    "@capacitor/cli": "^8.4.0",
     "@capacitor/core": "^8.4.0",
     "@capacitor/geolocation": "^8.2.0",
     "@capacitor/keyboard": "^8.0.5",
@@ -42,6 +41,7 @@
     "tailwindcss": "^4.3.0"
   },
   "devDependencies": {
+    "@capacitor/cli": "^8.4.0",
     "@eslint/js": "^10.0.1",
     "@testing-library/jest-dom": "^6.9.1",
     "@testing-library/react": "^16.3.2",

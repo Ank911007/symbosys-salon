@@ -10,15 +10,15 @@ async function getAllServices({ page = 1, limit = 20 } = {}) {
   const skip = (page - 1) * limit;
   const where = { isActive: true };
 
-  const services = await prisma.service.findMany({
-    where,
-    orderBy: { name: 'asc' },
-    skip,
-    take: limit,
-  });
-
-  const allActive = await prisma.service.findMany({ where, select: { id: true } });
-  const total = allActive.length;
+  const [services, total] = await Promise.all([
+    prisma.service.findMany({
+      where,
+      orderBy: { name: 'asc' },
+      skip,
+      take: limit,
+    }),
+    prisma.service.count({ where }),
+  ]);
 
   return { services, total, page, limit };
 }

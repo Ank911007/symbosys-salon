@@ -29,9 +29,16 @@ async function checkPhone({ phone }) {
     };
   }
 
-  // New phone — send OTP (mock for development)
-  const otp = '123456'; // TODO: Replace with real SMS service (Twilio, MSG91, etc.)
-  otpStore.set(phone, { otp, expiresAt: Date.now() + 5 * 60 * 1000 }); // 5 min expiry
+  // New phone — send OTP
+  if (process.env.NODE_ENV === 'development') {
+    // Development-only: use hardcoded OTP for testing
+    const otp = '123456';
+    otpStore.set(phone, { otp, expiresAt: Date.now() + 5 * 60 * 1000 }); // 5 min expiry
+  } else {
+    // Production: integrate real SMS service (e.g. Twilio, MSG91)
+    // TODO: Replace with actual SMS OTP delivery
+    throw ApiError.internal('OTP service not configured for production.');
+  }
 
   return { isNew: true };
 }
