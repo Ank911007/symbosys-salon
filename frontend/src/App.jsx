@@ -16,6 +16,7 @@ import BookCTA from './components/sections/BookCTA';
 import Footer from './components/sections/Footer';
 import { RouteLoader } from './components/ui/RouteLoader';
 import { EntryBookingModal } from './components/booking/EntryBookingModal';
+import { useCapacitor } from './hooks/useCapacitor';
 
 // Lazy loaded page routes
 const NearbySalons = lazy(() => import('./pages/NearbySalons'));
@@ -55,6 +56,7 @@ function LandingPage() {
  * All state, data, and rendering logic lives in dedicated components.
  */
 function App() {
+  useCapacitor();
   return (
     <QueryClientProvider client={queryClient}>
       <AuthProvider>

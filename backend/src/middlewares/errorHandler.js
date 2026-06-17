@@ -5,6 +5,8 @@ const ApiError = require('../utils/ApiError');
  * Catches all errors thrown or passed via next(err) and sends a consistent JSON response.
  */
 // eslint-disable-next-line no-unused-vars
+
+
 function errorHandler(err, req, res, next) {
   // Default to 500 Internal Server Error
   let statusCode = err.statusCode || 500;
@@ -76,5 +78,6 @@ function errorHandler(err, req, res, next) {
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack }),
   });
 }
+
 
 module.exports = errorHandler;
